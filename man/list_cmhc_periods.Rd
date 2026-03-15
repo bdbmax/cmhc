@@ -4,7 +4,7 @@
 \alias{list_cmhc_periods}
 \title{List available time periods for a CMHC table}
 \usage{
-list_cmhc_periods(survey, series, dimension, breakdown)
+list_cmhc_periods(survey, series, dimension, breakdown, geo_uid = NULL)
 }
 \arguments{
 \item{survey}{The CMHC survey, consult `list_cmhc_surveys()` for possible values.}
@@ -14,6 +14,11 @@ list_cmhc_periods(survey, series, dimension, breakdown)
 \item{dimension}{The dimension, consult `list_cmhc_dimensions()` for possible values.}
 
 \item{breakdown}{The geographic breakdown, consult `list_cmhc_breakdowns()` for possible values.}
+
+\item{geo_uid}{Optional Census geographic identifier (e.g., CSD "5907047").
+If NULL (default), uses a default probe geography (Vancouver CMA for
+CMA-level breakdowns, Canada for national-level). Available periods can
+vary by geography — smaller or newer CSDs may have fewer periods.}
 }
 \value{
 A tibble listing available time periods with Year, Month, Quarter,
@@ -39,6 +44,10 @@ list_cmhc_periods("Seniors", "Rental Housing Vacancy Rates", "Unit Type", "Snaps
 
 # Census-based tables
 list_cmhc_periods("Census", "Income", "Average and Median", "Survey Zones")
+
+# Periods for a specific geography (may differ from the default)
+list_cmhc_periods("Rms", "Vacancy Rate", "Bedroom Type", "Census Subdivision",
+                  geo_uid = "5907047")
 }
 
 }

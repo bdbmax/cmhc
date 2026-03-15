@@ -650,6 +650,10 @@ select_cmhc_table <- function(){
 #' @param series The CMHC data series, consult `list_cmhc_series()` for possible values.
 #' @param dimension The dimension, consult `list_cmhc_dimensions()` for possible values.
 #' @param breakdown The geographic breakdown, consult `list_cmhc_breakdowns()` for possible values.
+#' @param geo_uid Optional Census geographic identifier (e.g., CSD "5907047").
+#'   If NULL (default), uses a default probe geography (Vancouver CMA for
+#'   CMA-level breakdowns, Canada for national-level). Available periods can
+#'   vary by geography — smaller or newer CSDs may have fewer periods.
 #' @return A tibble listing available time periods with Year, Month, Quarter,
 #'   Season, and Caption columns.
 #'
@@ -668,10 +672,14 @@ select_cmhc_table <- function(){
 #'
 #' # Census-based tables
 #' list_cmhc_periods("Census", "Income", "Average and Median", "Survey Zones")
+#'
+#' # Periods for a specific geography (may differ from the default)
+#' list_cmhc_periods("Rms", "Vacancy Rate", "Bedroom Type", "Census Subdivision",
+#'                   geo_uid = "5907047")
 #' }
 #'
 #' @export
-list_cmhc_periods <- function(survey, series, dimension, breakdown) {
+list_cmhc_periods <- function(survey, series, dimension, breakdown, geo_uid = NULL) {
   table_list <- list_cmhc_tables(short = FALSE)
 
   selected <- table_list |>
@@ -686,8 +694,11 @@ list_cmhc_periods <- function(survey, series, dimension, breakdown) {
   breakdown_type <- cmhc_type_codes5[[breakdown]]
   if (is.null(breakdown_type)) stop("Unsupported breakdown: ", breakdown)
 
-  # National-level breakdowns use Canada as parent; others use Vancouver CMA
-  if (breakdown %in% c("Provinces", "Centres", "Snapshot")) {
+  if (!is.null(geo_uid)) {
+    region_params <- cmhc_region_params_from_census(geo_uid)
+    geo_id <- region_params$geography_id
+    geo_type <- region_params$geography_type_id
+  } else if (breakdown %in% c("Provinces", "Centres", "Snapshot")) {
     geo_id <- "1"
     geo_type <- "1"
   } else {
